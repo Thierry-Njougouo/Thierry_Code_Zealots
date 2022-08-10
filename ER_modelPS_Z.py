@@ -10,10 +10,21 @@ import pylab
 import csv
 import pandas as pd
 import statistics
+import os
 
 
+# This is the class to model my agent and its opinion
+class MyAgent:
+    # the opinion of the agent, either 0 or 1 (-1 means that the agent has not been initialised)
+    opinion = -1
+    # a boolean to say if an agent is a zealot or not
+    zealot = False
+    
+    def __init__(self, opinion):
+        self.opinion = opinion
 
-n = 10
+
+n = 100
 Tmax = 5000
 niter = 1
 
@@ -28,14 +39,14 @@ Liste_al = [0.001,  0.8, 1,  1.5]#[0.001]#,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.
 Liste_qb = [0.7, 0.8, 0.9, 1]
 
 Qa = 1 #probability to change from 0-->1
-P1 = int(n/2)
-nums = P1 * [1] + (n - P1) * [0]    
+proportion_of_agent_with_opinion_zero = 0.5
+
 #random.shuffle(nums)
 ########################### ZEALOTS #######################################
 
 ########## 
-Nzel_0=1 #Number of Zealots with opinion 1
-Nzel_1=1 #Number of Zealots with opinion 0
+number_of_zealots_with_opinion_zero=10 #Number of Zealots with opinion 0
+number_of_zealots_with_opinion_one=0 #Number of Zealots with opinion 1
 
 Threshold = 1#(n-Nzel_0)/n
 
@@ -43,11 +54,12 @@ Threshold = 1#(n-Nzel_0)/n
 #### Here the normal nodes have the value 2 just to create the object #####
 
 #############################################################################
-iz = 0
+debug=False
 
 
 for Qb in Liste_qb:
 
+    qualities=[Qa, Qb]
     print(Qb)
 
     for al in Liste_al:
@@ -73,38 +85,53 @@ for Qb in Liste_qb:
                 while not connected_net:
                     G = nx.erdos_renyi_graph(n,p)
                     connected_net = nx.is_connected(G)
+                
+                # create the population (initialisation!!)
+                population = []
+                number_of_non_zealots = n - (number_of_zealots_with_opinion_zero+number_of_zealots_with_opinion_one)
+                for a in range(number_of_non_zealots):
+                    the_opinion_of_the_guy = 0 if (a < (number_of_non_zealots*proportion_of_agent_with_opinion_zero)) else 1 
+                    newguy = MyAgent(the_opinion_of_the_guy)
+                    population.append(newguy)
                     
-                Opinion = np.array(nums)
-                Nombre_ones = [np.sum(Opinion)/float(n)]
+                # This code is just for debug to count the num of guys and their opinions
+                if debug:
+                    num_zeros=0
+                    num_ones=0
+                    for a in population:
+                        if a.opinion==0:
+                            num_zeros+=1
+                        else:
+                            num_ones+=1
+                    print(num_zeros)
+                    print(num_ones)
+                
+                # Let's add the zealots to the population
+                for z in range(number_of_zealots_with_opinion_zero): 
+                    newguy = MyAgent(0)
+                    newguy.zealot = True
+                    population.append(newguy)
+                for z in range(number_of_zealots_with_opinion_one): 
+                    newguy = MyAgent(1)
+                    newguy.zealot = True
+                    population.append(newguy)
+                    
+                np.random.shuffle(population)
+                
+                #Opinion = np.array(nums)
+                #Nombre_ones = [np.sum(Opinion)/float(n)]
                 #print(Opinion)
-####################################################################################################
-                while iz<1:
-                    idz0, idz1  = [], []
-                    j, jj = 0, 0
 
-                    ID=random.sample(G.nodes(), 4*Nzel_0)
-                    for z in ID:
-                        if Opinion[z]==0 and j<Nzel_0:
-                            idz0.append(z)
-                            j=j+1
-                        if Opinion[z]==1 and jj<Nzel_1:
-                            idz1.append(z)
-                            jj=jj+1
-                    iz = iz + 1
-                    print(idz1)
-                    print(idz0)
-###################################################################################################
-
-                qualities=[Qa, Qb]
                 ####################################################
                 cond = 0
                 t = 0
                 
                 while (cond == 0):
-                    random_node = random.sample(list(G.nodes()), 1)
-
+                    random_node = random.sample(list(G.nodes()), 1)[0]
+                    
                     ### We need to verify if the selected agent is not a zealot
-                    for random_node in idz0 or idz1:
+                    if population[random_node].zealot:
+                        # do nothing!
                         pass
                     else:
                         # List of neighbors
@@ -112,8 +139,8 @@ for Qb in Liste_qb:
                         # Neighbor Opinions
                         vocal_neighbors = []
                         for neigh in neighbors:
-                            if random.random() < qualities[ Opinion[neigh] ]:
-                                vocal_neighbors.append(Opinion[neigh])
+                            if random.random() < qualities[ population[neigh].opinion ]:
+                                vocal_neighbors.append( population[neigh].opinion )
 
                         if len(vocal_neighbors)>0:
                             # Fraction of opinions one in the list
@@ -128,23 +155,28 @@ for Qb in Liste_qb:
                                 
                             Rand_num = random.random()
                             if Rand_num < prob:
-                                Opinion[random_node] = 1
-
+                                population[random_node].opinion = 1
                             else:
-                                Opinion[random_node] = 0
+                                population[random_node].opinion = 0
                                     
 
-                    Nombre_ones_tmp = np.sum(Opinion)/float(n-Nzel_0)
-                    Nombre_ones.append(Nombre_ones_tmp)
+                    num_zeros=0
+                    num_ones=0
+                    for a in population:
+                        if a.opinion==0:
+                            num_zeros+=1
+                        else:
+                            num_ones+=1
+                    #Nombre_ones.append(Nombre_ones_tmp)
                     #print(Nombre_ones_tmp)
                     #################################################################
                     if t < Tmax:
-                        if (Nombre_ones_tmp >= Threshold):
+                        if (float(num_zeros)/n >= Threshold):
                             T.append(t)
                             j1 = j1 + 1
                             cond = 1
 
-                        elif (Nombre_ones_tmp <= 1 - Threshold):    
+                        elif (float(num_ones)/n <= 1 - Threshold):    
                             j0 = j0 + 1
                             T.append(t)
                             cond = 1
@@ -169,6 +201,7 @@ for Qb in Liste_qb:
 ######################################################################
 
             filename = "Results/Time"+"_qb"+str(Qb)+"_al"+str(al)+"_m"+str(p)+".csv"
+            os.makedirs("Results",exist_ok = True)
             file=open(filename,'w')
             write = csv.writer(file,delimiter ='\n') 
             write.writerow(T)
