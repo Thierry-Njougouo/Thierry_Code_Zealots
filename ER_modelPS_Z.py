@@ -26,7 +26,7 @@ class MyAgent:
 
 n = 100
 Tmax = 45000
-niter = 1
+niter = 100
 
 random.seed(1234567890)
 
@@ -40,6 +40,8 @@ Liste_qb = [0.7, 0.8, 0.9, 1]
 
 Qa = 1 #Quality of opinion 0
 proportion_of_agent_with_opinion_zero = 0.5
+#### We use --BA-- for Barabasi-Albert Model, --ER-- for Erdos-Renyi Model and --WS-- for Watt-Strogatz Model
+Network_name = ['ER']
 
 #random.shuffle(nums)
 ########################### ZEALOTS #######################################
@@ -77,16 +79,29 @@ for Qb in Liste_qb:
 
             for i in range(0,niter):
                 random.seed(i + AA*niter)
-                ########## Opinions
                 
+                ########## Build network
+                for i1 in Network_name:
+                        if i1 == 'BA':
+                            connected_net = False
+                            while not connected_net:
+                                G = nx.barabasi_albert_graph(n,m)
+                                connected_net = nx.is_connected(G)
 
+                        if i1=='ER':
+                            connected_net = False
+                            while not connected_net:
+                                G = nx.erdos_renyi_graph(n,p)
+                                connected_net = nx.is_connected(G)
 
-                connected_net = False
-                while not connected_net:
-                    G = nx.erdos_renyi_graph(n,p)
-                    connected_net = nx.is_connected(G)
+                        if i1=='WS':
+                            connected_net = False
+                            while not connected_net:
+                                G = nx.watt_strogatz_graph(n,m,p)
+                                connected_net = nx.is_connected(G)
+             
                 
-                # create the population (initialisation!!)
+                
                 population = []
                 number_of_non_zealots = n - (number_of_zealots_with_opinion_zero+number_of_zealots_with_opinion_one)
                 for a in range(number_of_non_zealots):
