@@ -45,10 +45,10 @@ proportion_of_agent_with_opinion_zero = 0.5
 ########################### ZEALOTS #######################################
 
 ########## 
-number_of_zealots_with_opinion_zero=10 #Number of Zealots with opinion 0
-number_of_zealots_with_opinion_one=0 #Number of Zealots with opinion 1
+number_of_zealots_with_opinion_zero=1 #Number of Zealots with opinion 0
+number_of_zealots_with_opinion_one=1 #Number of Zealots with opinion 1
 
-Threshold = 1#(n-Nzel_0)/n
+Threshold = (n-number_of_zealots_with_opinion_zero)/n
 
 ############################### Opinion of the whole nodes ################
 #### Here the normal nodes have the value 2 just to create the object #####
@@ -118,10 +118,7 @@ for Qb in Liste_qb:
                     
                 np.random.shuffle(population)
                 
-                #Opinion = np.array(nums)
-                #Nombre_ones = [np.sum(Opinion)/float(n)]
-                #print(Opinion)
-
+                
                 ####################################################
                 cond = 0
                 t = 0
@@ -160,23 +157,22 @@ for Qb in Liste_qb:
                                 population[random_node].opinion = 0
                                     
 
-                    num_zeros=0
-                    num_ones=0
-                    for a in population:
-                        if a.opinion==0:
-                            num_zeros+=1
+                    number_zeros=0
+                    number_ones=0
+                    for b in population:
+                        if b.opinion==0:
+                            number_zeros+=1
                         else:
-                            num_ones+=1
-                    #Nombre_ones.append(Nombre_ones_tmp)
-                    #print(Nombre_ones_tmp)
+                            number_ones+=1
+                    
                     #################################################################
                     if t < Tmax:
-                        if (float(num_zeros)/n >= Threshold):
+                        if (float(number_zeros)/float(n) >= Threshold):
                             T.append(t)
                             j1 = j1 + 1
                             cond = 1
 
-                        elif (float(num_ones)/n <= 1 - Threshold):    
+                        elif (float(number_ones)/flaot(n) <= 1 - Threshold):    
                             j0 = j0 + 1
                             T.append(t)
                             cond = 1
