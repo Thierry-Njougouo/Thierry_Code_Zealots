@@ -25,7 +25,7 @@ class MyAgent:
 
 
 n = 100
-Tmax = 5000
+Tmax = 45000
 niter = 1
 
 random.seed(1234567890)
@@ -38,7 +38,7 @@ Liste_p = [0.15, 0.5, 0.8, 1]# [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,  0.8, 0
 Liste_al = [0.001,  0.8, 1,  1.5]#[0.001]#,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 Liste_qb = [0.7, 0.8, 0.9, 1]
 
-Qa = 1 #probability to change from 0-->1
+Qa = 1 #Quality of opinion 0
 proportion_of_agent_with_opinion_zero = 0.5
 
 #random.shuffle(nums)
@@ -48,7 +48,7 @@ proportion_of_agent_with_opinion_zero = 0.5
 number_of_zealots_with_opinion_zero=1 #Number of Zealots with opinion 0
 number_of_zealots_with_opinion_one=1 #Number of Zealots with opinion 1
 
-Threshold = (n-number_of_zealots_with_opinion_zero)/n
+Threshold = float(n-number_of_zealots_with_opinion_zero)/float(n)
 
 ############################### Opinion of the whole nodes ################
 #### Here the normal nodes have the value 2 just to create the object #####
@@ -169,11 +169,11 @@ for Qb in Liste_qb:
                     if t < Tmax:
                         if (float(number_zeros)/float(n) >= Threshold):
                             T.append(t)
-                            j1 = j1 + 1
+                            j0 = j0 + 1
                             cond = 1
 
-                        elif (float(number_ones)/flaot(n) <= 1 - Threshold):    
-                            j0 = j0 + 1
+                        elif (float(number_ones)/float(n) <= 1 - Threshold):    
+                            j1 = j1 + 1
                             T.append(t)
                             cond = 1
 
